@@ -1,132 +1,135 @@
-let firstNumber = '';
-let tempNumber = '';
-let secondNumber = '';
-let operator = '';
-let display = '';
-let operationCounter = 0;
-const screen = document.querySelector('#screen')
+let firstNumber = ''
+let secondNumber = ''
+let currentOperation = null
+let shouldResetScreen = false
 
-function showOnScreen(arg){
-    display += arg;
-    return display
-}
+const numberButtons = document.querySelectorAll('[data-number]')
+const operatorButtons = document.querySelectorAll('[data-operator]')
+const equalsButton = document.getElementById('equal-btn')
+const refreshButton = document.getElementById('refresh-btn')
+const deleteButton = document.getElementById('delete-btn')
+const pointButton = document.getElementById('point-button')
+const lastOperationScreen = document.querySelector('#lastOperationScreen')
+const currentOperationScreen = document.querySelector('#currentOperationScreen')
 
-function collectDigits(digit){
-    if (operationCounter === 0){
-        firstNumber += digit;
+window.addEventListener('keydown', handleKeyboardInput)
+equalsButton.addEventListener('click', evaluate)
+refreshButton.addEventListener('click', clear)
+deleteButton.addEventListener('click', deleteNumber)
+pointButton.addEventListener('click', appendPoint)
+
+function evaluate() {
+    console.log('Evaluated')
+    if (currentOperation === null || shouldResetScreen) return
+    if (currentOperation === '÷' && currentOperationScreen.textContent === '0') {
+      alert("You can't divide by 0!")
+      return
     }
-    if (operationCounter === 1){
-        secondNumber += digit;
-    }
+    secondNumber = currentOperationScreen.textContent
+    currentOperationScreen.textContent = roundResult(
+      operate(currentOperation, firstNumber, secondNumber)
+    )
+    lastOperationScreen.textContent = `${firstNumber} ${currentOperation} ${secondNumber} =`
+    currentOperation = null
+  }
+
+function clear() {
+    currentOperationScreen.textContent = '0'
+    lastOperationScreen.textContent = ''
+    firstNumber = ''
+    secondNumber = ''
+    currentOperation = null
 }
 
-function clickOperator(Operator){
-    operator = Operator;
-    console.log(operator);
-    secondNumber = 0;
-    operationCounter = 1;
+function deleteNumber() {
+    currentOperationScreen.textContent = currentOperationScreen.textContent
+      .toString()
+      .slice(0, -1)
+  }
+
+function appendPoint() {
+    if (shouldResetScreen) resetScreen()
+    if (currentOperationScreen.textContent === '')
+      currentOperationScreen.textContent = '0'
+    if (currentOperationScreen.textContent.includes('.')) return
+    currentOperationScreen.textContent += '.'
 }
 
-function showResult(){
+numberButtons.forEach((button) => 
+  button.addEventListener('click', () => {appendNumber(button.textContent)})
+)
 
-    operate(firstNumber, operator, secondNumber);
-    display = currentResult;
-    operationCounter = 0;
+operatorButtons.forEach((button) =>
+  button.addEventListener('click', () => setOperation(button.textContent))
+)
+
+function appendNumber(number) {
+    if (currentOperationScreen.textContent === '0' || shouldResetScreen)
+        resetScreen()
+        currentOperationScreen.textContent += number
+  }
+
+function setOperation(operator) {
+    if (currentOperation !== null) {evaluate()}
+    firstNumber = currentOperationScreen.textContent
+    console.log(firstNumber)
+    currentOperation = operator
+    lastOperationScreen.textContent = `${firstNumber} ${currentOperation}`
+    shouldResetScreen = true
 }
 
-// Refresh screen:
-function refreshAll(){
-    display = '0';
-    screenShow = 0;
-    firstNumber = 0;
-    operationCounter = 0;
-};
-
-// Operands:
-const one = document.querySelector('#one')
-const two = document.querySelector('#two')
-const three = document.querySelector('#three')
-const four = document.querySelector('#four')
-const five = document.querySelector('#five')
-const six = document.querySelector('#six')
-const seven = document.querySelector('#seven')
-const eight = document.querySelector('#eight')
-const zero = document.querySelector('#zero')
-
-one.onclick= () => {collectDigits('1');showOnScreen(1);screenDisplay(display);}
-two.onclick = () => {collectDigits('2');showOnScreen(2);screenDisplay(display);}
-three.onclick = () => {collectDigits('3');showOnScreen(3);screenDisplay(display);}
-four.onclick = () => {collectDigits('4');showOnScreen(4);screenDisplay(display);}
-five.onclick = () => {collectDigits('5');showOnScreen(5);screenDisplay(display);}
-six.onclick = () => {collectDigits('6');showOnScreen(6);screenDisplay(display);}
-seven.onclick = () => {collectDigits('7');showOnScreen(7);screenDisplay(display);}
-eight.onclick = () => {collectDigits('8');showOnScreen(8);screenDisplay(display);}
-nine.onclick = () => {collectDigits('9');showOnScreen(9);screenDisplay(display);}
-zero.onclick = () => {collectDigits('0');showOnScreen(0);screenDisplay(display);}
-
-// Operators:
-const equalBtn = document.querySelector('#equal-btn')
-const refreshBtn = document.querySelector('#refresh-btn')
-const divideBtn = document.querySelector('#divide-btn')
-const multiBtn = document.querySelector('#Multi-btn')
-const subBtn = document.querySelector('#sub-btn')
-const addBtn = document.querySelector('#add-btn')
-const powBtn = document.querySelector('#Pow-btn')
-
-equalBtn.onclick = () => {showResult();screenDisplay(display);}
-refreshBtn.onclick = () => {refreshAll();screenDisplay(display);}
-subBtn.onclick = () => {if (operationCounter === 0){clickOperator('-');showOnScreen('-');screenDisplay(display)}}
-multiBtn.onclick = () => {if (operationCounter === 0){clickOperator('*');showOnScreen('*');screenDisplay(display)}}
-addBtn.onclick = () => {if (operationCounter === 0){clickOperator('+');showOnScreen('+');screenDisplay(display)}}
-powBtn.onclick = () => {if (operationCounter === 0){clickOperator('^');showOnScreen('^');screenDisplay(display)}}
-divideBtn.onclick = () => {if (operationCounter === 0){clickOperator('/');showOnScreen('/');screenDisplay(display)}}
-
+function resetScreen() {
+    currentOperationScreen.textContent = ''
+    shouldResetScreen = false
+  }
 // Operations:
-function operate(firstNumber, operator, secondNumber = 0){
+function operate(operator, firstNumber, secondNumber){
+    console.log(firstNumber)
+    console.log(operator)
+    console.log(secondNumber)
+
+    firstNumber = Number(firstNumber);
+    secondNumber = Number(secondNumber)
     if(operator == '+'){
-        let result =  add(parseFloat(firstNumber),parseFloat(secondNumber));
-        return result
+        return add(firstNumber,secondNumber);
     }
-    else if(operator == '-'){
-        let result = subtract(parseFloat(firstNumber),parseFloat(secondNumber));
-        return result
+    else if(operator == '−'){
+        return subtract(firstNumber,secondNumber);
     }
-    else if(operator == '*'){
-        let result = multiply(parseFloat(firstNumber),parseFloat(secondNumber))
-        return result
+    else if(operator == '×'){
+        return multiply(firstNumber,secondNumber)
     }
     else if(operator == '/'){
-        let result = divide(parseFloat(firstNumber),parseFloat(secondNumber))
-        return result
+        return divide(firstNumber,secondNumber)
     }
     else if(operator == '^'){
-        let result = toPower(parseFloat(firstNumber),parseFloat(secondNumber));
-        return result
-    }
-    else if(operator == 'c'){
-        let result = refresh();
-        return result
+        return toPower(firstNumber,secondNumber);
     }
 };
-const refresh = () => currentResult = 0;
-const add = (a,b) => {currentResult = a + b; firstNumber = currentResult; }
-const subtract = (a,b) => {currentResult = a - b; firstNumber = currentResult;}
-const multiply = (a,b) => {currentResult = a * b; firstNumber = currentResult;}
-const divide = (a,b) => {currentResult = a / b; firstNumber = currentResult;}
-const toPower = (a,b) => {currentResult = Math.pow(a, b); firstNumber = currentResult ;}
 
+const add = (a,b) => {return a + b}
+const subtract = (a,b) => {return a - b}
+const multiply = (a,b) => {return a * b}
+const divide = (a,b) => {return a / b}
+const toPower = (a,b) => {return Math.pow(a, b);}
 
-function screenDisplay (text){
-     screen.innerHTML = text;
+// the result of Operate to be rounded;
+function roundResult(number) {
+    return Math.round(number * 1000) / 1000
 }
 
-// delete button:
-const deleteBtn = document.querySelector('#delete-btn');
-deleteBtn.onclick = () => 
-{
-    console.log(firstNumber)
-    console.log(secondNumber)
-    secondNumber = secondNumber.slice(0,-1);
-    display = display.slice(0,-1)
-    screenDisplay (display)
+function handleKeyboardInput(e) {
+    if (e.key >= 0 && e.key <= 9) appendNumber(e.key)
+    if (e.key === '.') appendPoint()
+    if (e.key === '=' || e.key === 'Enter') evaluate()
+    if (e.key === 'Backspace') deleteNumber()
+    if (e.key === 'Escape') clear()
+    if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/')
+        setOperation(convertOperator(e.key))
+}
+function convertOperator(keyboardOperator) {
+    if (keyboardOperator === '/') return '÷'
+    if (keyboardOperator === '*') return '×'
+    if (keyboardOperator === '-') return '−'
+    if (keyboardOperator === '+') return '+'
 }
