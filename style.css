@@ -114,8 +114,10 @@ button {
 }
 
 img {
+    background-color: rgb(101, 105, 91);
     width: 30px;
     height: 30px;
+    border-radius: 15px;
 }
 
 .footer {
